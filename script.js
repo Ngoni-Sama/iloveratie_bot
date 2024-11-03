@@ -11,7 +11,7 @@ function startFunction() {
 function setLastSeen() {
     var date = new Date();
     var lastSeen = document.getElementById("lastseen");
-    lastSeen.innerText = "last seen today at " + date.getHours() + ":" + date.getMinutes();
+    lastSeen.innerText = "last seen today at " + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
 function closeFullDP() {
@@ -32,29 +32,35 @@ function isEnter(event) {
 
 function sendMsg() {
     var input = document.getElementById("inputMSG");
-    var ti = input.value;
-    if (input.value === "") {
+    var ti = input.value.trim();
+    if (ti === "") {
         return;
     }
+    addMessageToChat(ti, "sent");
+    input.value = "";
+    playSound();
+    setTimeout(() => waitAndResponse(ti), 1000);
+}
+
+function addMessageToChat(message, type) {
     var date = new Date();
     var myLI = document.createElement("li");
     var myDiv = document.createElement("div");
-    var greendiv = document.createElement("div");
+    var contentDiv = document.createElement("div");
     var dateLabel = document.createElement("label");
-    dateLabel.innerText = date.getHours() + ":" + date.getMinutes();
-    myDiv.setAttribute("class", "sent");
-    greendiv.setAttribute("class", "green");
-    dateLabel.setAttribute("class", "dateLabel");
-    greendiv.innerText = input.value;
-    myDiv.appendChild(greendiv);
+    
+    dateLabel.innerText = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    myDiv.setAttribute("class", type === "sent" ? "sent" : "received");
+    contentDiv.setAttribute("class", type === "sent" ? "green" : "grey");
+    contentDiv.innerText = message;
+
+    myDiv.appendChild(contentDiv);
     myLI.appendChild(myDiv);
-    greendiv.appendChild(dateLabel);
+    contentDiv.appendChild(dateLabel);
     document.getElementById("listUL").appendChild(myLI);
+    
     var s = document.getElementById("chatting");
     s.scrollTop = s.scrollHeight;
-    setTimeout(function () { waitAndResponse(ti) }, 1500);
-    input.value = "";
-    playSound();
 }
 
 function waitAndResponse(inputText) {
@@ -63,32 +69,40 @@ function waitAndResponse(inputText) {
     
     switch (inputText.toLowerCase().trim()) {
         case "intro":
-            setTimeout(() => {
-                sendTextMessage("Hello, I'm Sobin 🤖. I'm a counseling bot here to support you on your journey. If you're struggling with alcohol-related issues or need someone to talk to, I'm here to help. Send 'help' to know more about what I can do for you.");
-            }, 2000);
+            setTimeout(() => sendTextMessage("Hello, I'm Sobin 🤖. I'm here to support you! Type 'help' for options."), 1500);
             break;
         case "help":
-            sendTextMessage("💬 Send a keyword to get information:<br><span class='bold'>'struggles'</span> - to discuss struggles<br><span class='bold'>'resources'</span> - to find resources for help<br><span class='bold'>'contact'</span> - to get ways to connect with support<br><span class='bold'>'clear'</span> - to clear conversation<br><span class='bold'>'about'</span> - to know more about me");
+            sendTextMessage("💬 Options: <br><span class='bold'>'struggles'</span>, <span class='bold'>'resources'</span>, <span class='bold'>'contact'</span>, <span class='bold'>'mood'</span>, <span class='bold'>'clear'</span>, <span class='bold'>'about'</span>");
             break;
         case "struggles":
-            sendTextMessage("It's okay to talk about your struggles. What are you currently facing?");
+            sendTextMessage("It's okay to talk about your struggles. What are you facing?");
             break;
         case "resources":
-            sendTextMessage("Here are some resources that might help:<br>1. Local support groups<br>2. Counseling services<br>3. Helplines<br>4. Online forums");
+            sendTextMessage("Local support groups, counseling services, and helplines can be helpful.");
             break;
         case "contact":
             sendTextMessage(contactString);
+            break;
+        case "mood":
+            sendTextMessage("How are you feeling today? Reply with 'happy', 'sad', or 'neutral' for tailored support.");
             break;
         case "clear":
             clearChat();
             break;
         case "about":
-            sendTextMessage("🤖 This counseling bot is here to provide support and resources for those struggling with alcohol-related issues. Designed by <span class='bold'>Vinayak Patil</span> with ❤️");
+            sendTextMessage("🤖 I'm Sobin, designed by <span class='bold'>Vinayak Patil</span>. Here to help you!");
+            break;
+        case "happy":
+            sendTextMessage("That's great to hear! Keep up the positive vibes! 😊");
+            break;
+        case "sad":
+            sendTextMessage("It's okay to feel sad. I'm here to listen if you want to talk about it.");
+            break;
+        case "neutral":
+            sendTextMessage("Sometimes just being neutral is a good place to be. How can I assist you today?");
             break;
         default:
-            setTimeout(() => {
-                sendTextMessage("I'm sorry, I couldn't understand that...😢<br>Send 'help' for options.");
-            }, 2000);
+            setTimeout(() => sendTextMessage("I'm sorry, I didn't understand that. Type 'help' for options."), 1500);
             break;
     }
 }
@@ -100,21 +114,7 @@ function clearChat() {
 
 function sendTextMessage(textToSend) {
     setTimeout(setLastSeen, 1000);
-    var date = new Date();
-    var myLI = document.createElement("li");
-    var myDiv = document.createElement("div");
-    var greendiv = document.createElement("div");
-    var dateLabel = document.createElement("label");
-    dateLabel.innerText = date.getHours() + ":" + date.getMinutes();
-    myDiv.setAttribute("class", "received");
-    greendiv.setAttribute("class", "grey");
-    greendiv.innerHTML = textToSend;
-    myDiv.appendChild(greendiv);
-    myLI.appendChild(myDiv);
-    greendiv.appendChild(dateLabel);
-    document.getElementById("listUL").appendChild(myLI);
-    var s = document.getElementById("chatting");
-    s.scrollTop = s.scrollHeight;
+    addMessageToChat(textToSend, "received");
     playSound();
 }
 
